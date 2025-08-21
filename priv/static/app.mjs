@@ -2677,9 +2677,6 @@ function h1(attrs, children) {
 function div(attrs, children) {
   return element2("div", attrs, children);
 }
-function figcaption(attrs, children) {
-  return element2("figcaption", attrs, children);
-}
 function img(attrs) {
   return element2("img", attrs, empty_list);
 }
@@ -4776,6 +4773,7 @@ function view_new_pokemon(new_pokemon) {
     toList([
       input(
         toList([
+          class$("border border-gray-500 rounded-md p-1"),
           placeholder("Enter Pokemon name"),
           value(new_pokemon),
           on_input((var0) => {
@@ -4796,21 +4794,21 @@ function view_pokemon_card(pokemon) {
     toList([
       img(
         toList([
-          class$("w-full bg-emerald-200"),
+          class$("w-full bg-emerald-200 "),
           src(pokemon.sprite_url),
           alt(pokemon.name)
         ])
-      ),
-      figcaption(
-        toList([class$("text-center")]),
-        toList([text3(pokemon.name)])
       )
     ])
   );
 }
 function view_pokemon_list(pokemon_list) {
   return div(
-    toList([class$("grid grid-cols-4 grid-rows-4 gap-4")]),
+    toList([
+      class$(
+        "grid grid-cols-6 grid-rows-5 gap-2 border-2 border-emerald-500 rounded-md p-2"
+      )
+    ]),
     map(pokemon_list, view_pokemon_card)
   );
 }
@@ -4835,10 +4833,10 @@ function main() {
       "let_assert",
       FILEPATH,
       "app",
-      14,
+      13,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 300, end: 349, pattern_start: 311, pattern_end: 316 }
+      { value: $, start: 280, end: 329, pattern_start: 291, pattern_end: 296 }
     );
   }
   return void 0;

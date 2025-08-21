@@ -82,6 +82,7 @@ fn view(model: Model) -> Element(Msg) {
 fn view_new_pokemon(new_pokemon: String) -> Element(Msg) {
   html.div([attr.class("text-center py-2")], [
     html.input([
+      attr.class("border border-gray-500 rounded-md " <> "p-1"),
       attr.placeholder("Enter Pokemon name"),
       attr.value(new_pokemon),
       event.on_input(UserTypedPokemon),
@@ -92,7 +93,13 @@ fn view_new_pokemon(new_pokemon: String) -> Element(Msg) {
 
 fn view_pokemon_list(pokemon_list: List(Pokemon)) -> Element(Msg) {
   html.div(
-    [attr.class("grid grid-cols-4 grid-rows-4 gap-4")],
+    [
+      attr.class(
+        "grid grid-cols-6 grid-rows-5 gap-2 "
+        <> "border-2 border-emerald-500 rounded-md "
+        <> "p-2",
+      ),
+    ],
     list.map(pokemon_list, view_pokemon_card),
   )
 }
@@ -100,10 +107,9 @@ fn view_pokemon_list(pokemon_list: List(Pokemon)) -> Element(Msg) {
 fn view_pokemon_card(pokemon: Pokemon) -> Element(Msg) {
   html.div([], [
     html.img([
-      attr.class("w-full bg-emerald-200"),
+      attr.class("w-full bg-emerald-200 "),
       attr.src(pokemon.sprite_url),
       attr.alt(pokemon.name),
     ]),
-    html.figcaption([attr.class("text-center")], [html.text(pokemon.name)]),
   ])
 }
