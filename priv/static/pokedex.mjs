@@ -4712,8 +4712,7 @@ function on_input(msg) {
   );
 }
 
-// build/dev/javascript/app/app.mjs
-var FILEPATH = "src/app.gleam";
+// build/dev/javascript/pokedex/pokemon.mjs
 var Pokemon = class extends CustomType {
   constructor(name, sprite_url) {
     super();
@@ -4721,6 +4720,9 @@ var Pokemon = class extends CustomType {
     this.sprite_url = sprite_url;
   }
 };
+
+// build/dev/javascript/pokedex/pokedex.mjs
+var FILEPATH = "src/pokedex.gleam";
 var Model = class extends CustomType {
   constructor(current_pokemon, pokemon_list) {
     super();
@@ -4832,11 +4834,11 @@ function main() {
     throw makeError(
       "let_assert",
       FILEPATH,
-      "app",
-      13,
+      "pokedex",
+      15,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 280, end: 329, pattern_start: 291, pattern_end: 296 }
+      { value: $, start: 320, end: 369, pattern_start: 331, pattern_end: 336 }
     );
   }
   return void 0;

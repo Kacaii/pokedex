@@ -1,12 +1,14 @@
 import gleam/io
 import gleam/list
-import lustre
 
+import lustre
 import lustre/attribute as attr
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
+
+import pokemon.{type Pokemon, Pokemon}
 
 pub fn main() -> Nil {
   let app = lustre.application(init:, update:, view:)
@@ -16,10 +18,6 @@ pub fn main() -> Nil {
 }
 
 // MODEL -----------------------------------------------------------------------
-
-pub type Pokemon {
-  Pokemon(name: String, sprite_url: String)
-}
 
 pub type Model {
   Model(current_pokemon: String, pokemon_list: List(Pokemon))
