@@ -96,17 +96,17 @@ fn view(model: Model) -> Element(Msg) {
 }
 
 fn view_new_pokemon(new_pokemon: String) -> Element(Msg) {
-  html.div([attr.class("text-center py-2")], [
+  html.div([attr.class("py-2 join w-full")], [
     html.input([
-      attr.class("border border-gray-500 rounded-md " <> "p-1"),
-      attr.placeholder("Enter Pokemon name:"),
+      attr.class("input join-item"),
+      attr.placeholder("Enter a Pokemon name:"),
       attr.value(new_pokemon),
       event.on_input(UserTypedPokemon),
     ]),
     html.button(
       [
         event.on_click(UserAddedPokemon),
-        attr.class("bg-gray-400 rounded-md mx-2 p-1"),
+        attr.class("btn join-item"),
       ],
       [html.text("Add")],
     ),
@@ -118,7 +118,7 @@ fn view_pokemon_list(pokemon_list: List(Pokemon)) -> Element(Msg) {
     [
       attr.class(
         "grid grid-cols-6 grid-rows-5 gap-2 "
-        <> "border-2 border-black rounded-sm p-2",
+        <> "border-1 border-gray-300 rounded-sm p-2",
       ),
     ],
     list.map(pokemon_list, view_pokemon_card),

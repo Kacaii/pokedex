@@ -6462,12 +6462,12 @@ function init(_) {
 }
 function view_new_pokemon(new_pokemon) {
   return div(
-    toList([class$("text-center py-2")]),
+    toList([class$("py-2 join w-full")]),
     toList([
       input(
         toList([
-          class$("border border-gray-500 rounded-md p-1"),
-          placeholder("Enter Pokemon name:"),
+          class$("input join-item"),
+          placeholder("Enter a Pokemon name:"),
           value(new_pokemon),
           on_input((var0) => {
             return new UserTypedPokemon(var0);
@@ -6477,7 +6477,7 @@ function view_new_pokemon(new_pokemon) {
       button(
         toList([
           on_click(new UserAddedPokemon()),
-          class$("bg-gray-400 rounded-md mx-2 p-1")
+          class$("btn join-item")
         ]),
         toList([text3("Add")])
       )
@@ -6504,7 +6504,7 @@ function view_pokemon_list(pokemon_list) {
   return div(
     toList([
       class$(
-        "grid grid-cols-6 grid-rows-5 gap-2 border-2 border-black rounded-sm p-2"
+        "grid grid-cols-6 grid-rows-5 gap-2 border-1 border-gray-300 rounded-sm p-2"
       )
     ]),
     map(pokemon_list, view_pokemon_card)
