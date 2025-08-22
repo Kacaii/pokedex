@@ -89,50 +89,84 @@ pub fn init(with pokemons: List(Pokemon)) -> #(Model, Effect(Msg)) {
 // VIEW ------------------------------------------------------------------------
 
 fn view(model: Model) -> Element(Msg) {
-  html.div([attr.class("max-w-md  mx-auto my-5")], [
-    view_pokemon_list(model.pokemon_list),
-    view_new_pokemon(model.current_pokemon),
-  ])
-}
-
-fn view_new_pokemon(new_pokemon: String) -> Element(Msg) {
-  html.div([attr.class("join py-2  w-full")], [
-    html.input([
-      attr.class("input join-item"),
-      attr.placeholder("Enter a Pokemon name:"),
-      attr.value(new_pokemon),
-      event.on_input(UserTypedPokemon),
-    ]),
-    html.button(
-      [
-        event.on_click(UserAddedPokemon),
-        attr.class("btn join-item"),
-      ],
-      [html.text("Add")],
-    ),
-  ])
+  html.div(
+    [
+      attr.class(
+        "border-1 border-ctp-overlay1 rounded-sm max-w-md  mx-auto my-5",
+      ),
+    ],
+    [
+      view_pokemon_list(model.pokemon_list),
+      html.hr([attr.class("text-ctp-overlay1")]),
+      view_new_pokemon(model.current_pokemon),
+    ],
+  )
 }
 
 fn view_pokemon_list(pokemon_list: List(Pokemon)) -> Element(Msg) {
   html.div(
     [
       attr.class(
-        "grid grid-cols-6 grid-rows-5 gap-2 "
-        <> "border-1 border-gray-300 rounded-sm p-2",
+        "bg-ctp-base "
+        <> "grid grid-cols-6 grid-rows-5 gap-2 "
+        <> "rounded-t-sm p-2",
       ),
     ],
     list.map(pokemon_list, view_pokemon_card),
   )
 }
 
+fn view_new_pokemon(new_pokemon: String) -> Element(Msg) {
+  html.div(
+    [
+      attr.class("bg-ctp-base rounded-b-sm " <> "py-2 text-center space-x-2"),
+    ],
+    [
+      // Input for the Pokemon
+      html.input([
+        attr.class(
+          "placeholder:text-ctp-overlay1 border-1 border-ctp-overlay1 rounded-sm"
+          <> " p-2 "
+          <> "text-ctp-text",
+        ),
+        attr.placeholder("Enter a Pokemon name:"),
+        attr.value(new_pokemon),
+        event.on_input(UserTypedPokemon),
+      ]),
+
+      // Button to add the Pokemon
+      html.button(
+        [
+          attr.class(
+            "hover:bg-ctp-overlay0 hover:text-ctp-base hover:cursor-pointer "
+            <> "p-2 rounded-sm "
+            <> "border-1 border-ctp-overlay1 "
+            <> "text-ctp-overlay1",
+          ),
+          event.on_click(UserAddedPokemon),
+        ],
+        [html.text("Add")],
+      ),
+    ],
+  )
+}
+
 fn view_pokemon_card(pokemon: Pokemon) -> Element(Msg) {
   html.div(
-    [attr.class("tooltip tooltip-bottom"), attr.data("tip", pokemon.name)],
+    //   Tooltip
+    [
+      attr.class("tooltip tooltip-bottom"),
+      attr.data("tip", string.capitalise(pokemon.name)),
+    ],
+    //   Pokemon Card
     [
       html.img([
         attr.class(
-          "w-full hover:drop-shadow-md hover:scale-105 "
-          <> "transform transition-transform duration-200",
+          "w-full border border-ctp-overlay1 rounded-sm  "
+          <> " hover:cursor-pointer "
+          <> "hover:bg-ctp-overlay0 hover:drop-shadow-md "
+          <> "hover:scale-105 hover:rotate-3 "
+          <> "transform transition duration-200",
         ),
         attr.src(pokemon.sprite_url),
         attr.alt(pokemon.name),

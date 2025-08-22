@@ -1556,6 +1556,9 @@ function key_find(keyword_list, desired_key) {
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function append2(first, second2) {
+  return first + second2;
+}
 function concat_loop(loop$strings, loop$accumulator) {
   while (true) {
     let strings = loop$strings;
@@ -1572,6 +1575,16 @@ function concat_loop(loop$strings, loop$accumulator) {
 }
 function concat2(strings) {
   return concat_loop(strings, "");
+}
+function capitalise(string5) {
+  let $ = pop_grapheme(string5);
+  if ($ instanceof Ok) {
+    let first$1 = $[0][0];
+    let rest = $[0][1];
+    return append2(uppercase(first$1), lowercase(rest));
+  } else {
+    return "";
+  }
 }
 function inspect2(term) {
   let _pipe = inspect(term);
@@ -1796,17 +1809,42 @@ function field(field_name, field_decoder, next) {
 }
 
 // build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
+var Nil = void 0;
 function identity(x) {
   return x;
 }
 function to_string(term) {
   return term.toString();
 }
+var segmenter = void 0;
+function graphemes_iterator(string5) {
+  if (globalThis.Intl && Intl.Segmenter) {
+    segmenter ||= new Intl.Segmenter();
+    return segmenter.segment(string5)[Symbol.iterator]();
+  }
+}
+function pop_grapheme(string5) {
+  let first;
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    first = iterator.next().value?.segment;
+  } else {
+    first = string5.match(/./su)?.[0];
+  }
+  if (first) {
+    return new Ok([first, string5.slice(first.length)]);
+  } else {
+    return new Error(Nil);
+  }
+}
 function pop_codeunit(str) {
   return [str.charCodeAt(0) | 0, str.slice(1)];
 }
 function lowercase(string5) {
   return string5.toLowerCase();
+}
+function uppercase(string5) {
+  return string5.toUpperCase();
 }
 function string_codeunit_slice(str, from2, length4) {
   return str.slice(from2, from2 + length4);
@@ -3081,6 +3119,9 @@ function text3(content) {
 }
 function div(attrs, children) {
   return element2("div", attrs, children);
+}
+function hr(attrs) {
+  return element2("hr", attrs, empty_list);
 }
 function img(attrs) {
   return element2("img", attrs, empty_list);
@@ -6447,11 +6488,15 @@ function init(pokemons) {
 }
 function view_new_pokemon(new_pokemon) {
   return div(
-    toList([class$("join py-2  w-full")]),
+    toList([
+      class$("bg-ctp-base rounded-b-sm py-2 text-center space-x-2")
+    ]),
     toList([
       input(
         toList([
-          class$("input join-item"),
+          class$(
+            "placeholder:text-ctp-overlay1 border-1 border-ctp-overlay1 rounded-sm p-2 text-ctp-text"
+          ),
           placeholder("Enter a Pokemon name:"),
           value(new_pokemon),
           on_input((var0) => {
@@ -6461,8 +6506,10 @@ function view_new_pokemon(new_pokemon) {
       ),
       button(
         toList([
-          on_click(new UserAddedPokemon()),
-          class$("btn join-item")
+          class$(
+            "hover:bg-ctp-overlay0 hover:text-ctp-base hover:cursor-pointer p-2 rounded-sm border-1 border-ctp-overlay1 text-ctp-overlay1"
+          ),
+          on_click(new UserAddedPokemon())
         ]),
         toList([text3("Add")])
       )
@@ -6473,13 +6520,13 @@ function view_pokemon_card(pokemon) {
   return div(
     toList([
       class$("tooltip tooltip-bottom"),
-      data("tip", pokemon.name)
+      data("tip", capitalise(pokemon.name))
     ]),
     toList([
       img(
         toList([
           class$(
-            "w-full hover:drop-shadow-md hover:scale-105 transform transition-transform duration-200"
+            "w-full border border-ctp-overlay1 rounded-sm   hover:cursor-pointer hover:bg-ctp-overlay0 hover:drop-shadow-md hover:scale-105 hover:rotate-3 transform transition duration-200"
           ),
           src(pokemon.sprite_url),
           alt(pokemon.name)
@@ -6492,7 +6539,7 @@ function view_pokemon_list(pokemon_list) {
   return div(
     toList([
       class$(
-        "grid grid-cols-6 grid-rows-5 gap-2 border-1 border-gray-300 rounded-sm p-2"
+        "bg-ctp-base grid grid-cols-6 grid-rows-5 gap-2 rounded-t-sm p-2"
       )
     ]),
     map(pokemon_list, view_pokemon_card)
@@ -6500,9 +6547,14 @@ function view_pokemon_list(pokemon_list) {
 }
 function view(model) {
   return div(
-    toList([class$("max-w-md  mx-auto my-5")]),
+    toList([
+      class$(
+        "border-1 border-ctp-overlay1 rounded-sm max-w-md  mx-auto my-5"
+      )
+    ]),
     toList([
       view_pokemon_list(model.pokemon_list),
+      hr(toList([class$("text-ctp-overlay1")])),
       view_new_pokemon(model.current_pokemon)
     ])
   );
