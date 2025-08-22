@@ -274,8 +274,8 @@ function bitArrayPrintDeprecationWarning(name, message2) {
 }
 var Result = class _Result extends CustomType {
   // @internal
-  static isResult(data) {
-    return data instanceof _Result;
+  static isResult(data2) {
+    return data2 instanceof _Result;
   }
 };
 var Ok = class extends Result {
@@ -1593,8 +1593,8 @@ var Decoder = class extends CustomType {
     this.function = function$;
   }
 };
-function run(data, decoder) {
-  let $ = decoder.function(data);
+function run(data2, decoder) {
+  let $ = decoder.function(data2);
   let maybe_invalid_data;
   let errors;
   maybe_invalid_data = $[0];
@@ -1605,26 +1605,26 @@ function run(data, decoder) {
     return new Error(errors);
   }
 }
-function success(data) {
+function success(data2) {
   return new Decoder((_) => {
-    return [data, toList([])];
+    return [data2, toList([])];
   });
 }
 function map2(decoder, transformer) {
   return new Decoder(
     (d) => {
       let $ = decoder.function(d);
-      let data;
+      let data2;
       let errors;
-      data = $[0];
+      data2 = $[0];
       errors = $[1];
-      return [transformer(data), errors];
+      return [transformer(data2), errors];
     }
   );
 }
 function run_decoders(loop$data, loop$failure, loop$decoders) {
   while (true) {
-    let data = loop$data;
+    let data2 = loop$data;
     let failure2 = loop$failure;
     let decoders = loop$decoders;
     if (decoders instanceof Empty) {
@@ -1632,7 +1632,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
     } else {
       let decoder = decoders.head;
       let decoders$1 = decoders.tail;
-      let $ = decoder.function(data);
+      let $ = decoder.function(data2);
       let layer;
       let errors;
       layer = $;
@@ -1640,7 +1640,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
       if (errors instanceof Empty) {
         return layer;
       } else {
-        loop$data = data;
+        loop$data = data2;
         loop$failure = failure2;
         loop$decoders = decoders$1;
       }
@@ -1663,8 +1663,8 @@ function one_of(first, alternatives) {
     }
   );
 }
-function run_dynamic_function(data, name, f) {
-  let $ = f(data);
+function run_dynamic_function(data2, name, f) {
+  let $ = f(data2);
   if ($ instanceof Ok) {
     let data$1 = $[0];
     return [data$1, toList([])];
@@ -1672,16 +1672,16 @@ function run_dynamic_function(data, name, f) {
     let zero = $[0];
     return [
       zero,
-      toList([new DecodeError(name, classify_dynamic(data), toList([]))])
+      toList([new DecodeError(name, classify_dynamic(data2), toList([]))])
     ];
   }
 }
-function decode_int(data) {
-  return run_dynamic_function(data, "Int", int);
+function decode_int(data2) {
+  return run_dynamic_function(data2, "Int", int);
 }
 var int2 = /* @__PURE__ */ new Decoder(decode_int);
-function decode_string(data) {
-  return run_dynamic_function(data, "String", string);
+function decode_string(data2) {
+  return run_dynamic_function(data2, "String", string);
 }
 var string2 = /* @__PURE__ */ new Decoder(decode_string);
 function push_path(layer, path) {
@@ -1724,15 +1724,15 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
     let path = loop$path;
     let position = loop$position;
     let inner = loop$inner;
-    let data = loop$data;
+    let data2 = loop$data;
     let handle_miss = loop$handle_miss;
     if (path instanceof Empty) {
-      let _pipe = inner(data);
+      let _pipe = inner(data2);
       return push_path(_pipe, reverse(position));
     } else {
       let key = path.head;
       let path$1 = path.tail;
-      let $ = index2(data, key);
+      let $ = index2(data2, key);
       if ($ instanceof Ok) {
         let $1 = $[0];
         if ($1 instanceof Some) {
@@ -1743,16 +1743,16 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
           loop$data = data$1;
           loop$handle_miss = handle_miss;
         } else {
-          return handle_miss(data, prepend(key, position));
+          return handle_miss(data2, prepend(key, position));
         }
       } else {
         let kind = $[0];
-        let $1 = inner(data);
+        let $1 = inner(data2);
         let default$;
         default$ = $1[0];
         let _pipe = [
           default$,
-          toList([new DecodeError(kind, classify_dynamic(data), toList([]))])
+          toList([new DecodeError(kind, classify_dynamic(data2), toList([]))])
         ];
         return push_path(_pipe, reverse(position));
       }
@@ -1761,14 +1761,14 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
 }
 function subfield(field_path, field_decoder, next) {
   return new Decoder(
-    (data) => {
+    (data2) => {
       let $ = index3(
         field_path,
         toList([]),
         field_decoder.function,
-        data,
-        (data2, position) => {
-          let $12 = field_decoder.function(data2);
+        data2,
+        (data3, position) => {
+          let $12 = field_decoder.function(data3);
           let default$;
           default$ = $12[0];
           let _pipe = [
@@ -1782,7 +1782,7 @@ function subfield(field_path, field_decoder, next) {
       let errors1;
       out = $[0];
       errors1 = $[1];
-      let $1 = next(out).function(data);
+      let $1 = next(out).function(data2);
       let out$1;
       let errors2;
       out$1 = $1[0];
@@ -1841,31 +1841,31 @@ var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
 function console_error(term) {
   console.error(term);
 }
-function classify_dynamic(data) {
-  if (typeof data === "string") {
+function classify_dynamic(data2) {
+  if (typeof data2 === "string") {
     return "String";
-  } else if (typeof data === "boolean") {
+  } else if (typeof data2 === "boolean") {
     return "Bool";
-  } else if (data instanceof Result) {
+  } else if (data2 instanceof Result) {
     return "Result";
-  } else if (data instanceof List) {
+  } else if (data2 instanceof List) {
     return "List";
-  } else if (data instanceof BitArray) {
+  } else if (data2 instanceof BitArray) {
     return "BitArray";
-  } else if (data instanceof Dict) {
+  } else if (data2 instanceof Dict) {
     return "Dict";
-  } else if (Number.isInteger(data)) {
+  } else if (Number.isInteger(data2)) {
     return "Int";
-  } else if (Array.isArray(data)) {
+  } else if (Array.isArray(data2)) {
     return `Array`;
-  } else if (typeof data === "number") {
+  } else if (typeof data2 === "number") {
     return "Float";
-  } else if (data === null) {
+  } else if (data2 === null) {
     return "Nil";
-  } else if (data === void 0) {
+  } else if (data2 === void 0) {
     return "Nil";
   } else {
-    const type = typeof data;
+    const type = typeof data2;
     return type.charAt(0).toUpperCase() + type.slice(1);
   }
 }
@@ -2039,34 +2039,34 @@ var Inspector = class {
     return acc;
   }
 };
-function index2(data, key) {
-  if (data instanceof Dict || data instanceof WeakMap || data instanceof Map) {
+function index2(data2, key) {
+  if (data2 instanceof Dict || data2 instanceof WeakMap || data2 instanceof Map) {
     const token = {};
-    const entry = data.get(key, token);
+    const entry = data2.get(key, token);
     if (entry === token) return new Ok(new None());
     return new Ok(new Some(entry));
   }
   const key_is_int = Number.isInteger(key);
-  if (key_is_int && key >= 0 && key < 8 && data instanceof List) {
+  if (key_is_int && key >= 0 && key < 8 && data2 instanceof List) {
     let i = 0;
-    for (const value2 of data) {
+    for (const value2 of data2) {
       if (i === key) return new Ok(new Some(value2));
       i++;
     }
     return new Error("Indexable");
   }
-  if (key_is_int && Array.isArray(data) || data && typeof data === "object" || data && Object.getPrototypeOf(data) === Object.prototype) {
-    if (key in data) return new Ok(new Some(data[key]));
+  if (key_is_int && Array.isArray(data2) || data2 && typeof data2 === "object" || data2 && Object.getPrototypeOf(data2) === Object.prototype) {
+    if (key in data2) return new Ok(new Some(data2[key]));
     return new Ok(new None());
   }
   return new Error(key_is_int ? "Indexable" : "Dict");
 }
-function int(data) {
-  if (Number.isInteger(data)) return new Ok(data);
+function int(data2) {
+  if (Number.isInteger(data2)) return new Ok(data2);
   return new Error(0);
 }
-function string(data) {
-  if (typeof data === "string") return new Ok(data);
+function string(data2) {
+  if (typeof data2 === "string") return new Ok(data2);
   return new Error("");
 }
 
@@ -2463,6 +2463,9 @@ function attribute2(name, value2) {
 }
 function class$(name) {
   return attribute2("class", name);
+}
+function data(key, value2) {
+  return attribute2("data-" + key, value2);
 }
 function alt(text4) {
   return attribute2("alt", text4);
@@ -4136,7 +4139,7 @@ function diff(events, old, new$8) {
 var setTimeout = globalThis.setTimeout;
 var clearTimeout = globalThis.clearTimeout;
 var createElementNS = (ns, name) => document().createElementNS(ns, name);
-var createTextNode = (data) => document().createTextNode(data);
+var createTextNode = (data2) => document().createTextNode(data2);
 var createDocumentFragment = () => document().createDocumentFragment();
 var insertBefore = (parent, node, reference) => parent.insertBefore(node, reference);
 var moveBefore = SUPPORTS_MOVE_BEFORE ? (parent, node, reference) => parent.moveBefore(node, reference) : insertBefore;
@@ -4147,7 +4150,7 @@ var removeAttribute = (node, name) => node.removeAttribute(name);
 var addEventListener = (node, name, handler, options) => node.addEventListener(name, handler, options);
 var removeEventListener = (node, name, handler) => node.removeEventListener(name, handler);
 var setInnerHtml = (node, innerHtml) => node.innerHTML = innerHtml;
-var setData = (node, data) => node.data = data;
+var setData = (node, data2) => node.data = data2;
 var meta = Symbol("lustre");
 var MetadataNode = class {
   constructor(kind, parent, node, key) {
@@ -4470,7 +4473,7 @@ var Reconciler = class {
       event4.detail ??= {};
       event4.detail.formData = [...new FormData(event4.target).entries()];
     }
-    const data = this.#useServerEvents ? createServerEvent(event4, include ?? []) : event4;
+    const data2 = this.#useServerEvents ? createServerEvent(event4, include ?? []) : event4;
     const throttle = throttles.get(type);
     if (throttle) {
       const now = Date.now();
@@ -4478,7 +4481,7 @@ var Reconciler = class {
       if (now > last + throttle.delay) {
         throttle.last = now;
         throttle.lastEvent = event4;
-        this.#dispatch(data, path, type, immediate2);
+        this.#dispatch(data2, path, type, immediate2);
       }
     }
     const debounce = debouncers.get(type);
@@ -4486,11 +4489,11 @@ var Reconciler = class {
       clearTimeout(debounce.timeout);
       debounce.timeout = setTimeout(() => {
         if (event4 === throttles.get(type)?.lastEvent) return;
-        this.#dispatch(data, path, type, immediate2);
+        this.#dispatch(data2, path, type, immediate2);
       }, debounce.delay);
     }
     if (!throttle && !debounce) {
-      this.#dispatch(data, path, type, immediate2);
+      this.#dispatch(data2, path, type, immediate2);
     }
   }
 };
@@ -4511,7 +4514,7 @@ var handleEvent = (event4) => {
   handler(event4);
 };
 var createServerEvent = (event4, include = []) => {
-  const data = {};
+  const data2 = {};
   if (event4.type === "input" || event4.type === "change") {
     include.push("target.value");
   }
@@ -4520,7 +4523,7 @@ var createServerEvent = (event4, include = []) => {
   }
   for (const property3 of include) {
     const path = property3.split(".");
-    for (let i = 0, input2 = event4, output = data; i < path.length; i++) {
+    for (let i = 0, input2 = event4, output = data2; i < path.length; i++) {
       if (i === path.length - 1) {
         output[path[i]] = input2[path[i]];
         break;
@@ -4529,7 +4532,7 @@ var createServerEvent = (event4, include = []) => {
       input2 = input2[path[i]];
     }
   }
-  return data;
+  return data2;
 };
 var syncedBooleanAttribute = /* @__NO_SIDE_EFFECTS__ */ (name) => {
   return {
@@ -4824,11 +4827,11 @@ var Runtime = class {
       this.#tick(effects);
     }
   }
-  emit(event4, data) {
+  emit(event4, data2) {
     const target = this.root.host ?? this.root;
     target.dispatchEvent(
       new CustomEvent(event4, {
-        detail: data,
+        detail: data2,
         bubbles: true,
         composed: true
       })
@@ -4871,7 +4874,7 @@ var Runtime = class {
   #shouldFlush = false;
   #actions = {
     dispatch: (msg, immediate2) => this.dispatch(msg, immediate2),
-    emit: (event4, data) => this.emit(event4, data),
+    emit: (event4, data2) => this.emit(event4, data2),
     select: () => {
     },
     root: () => this.root,
@@ -4952,10 +4955,10 @@ var EffectDispatchedMessage = class extends CustomType {
   }
 };
 var EffectEmitEvent = class extends CustomType {
-  constructor(name, data) {
+  constructor(name, data2) {
     super();
     this.name = name;
-    this.data = data;
+    this.data = data2;
   }
 };
 var SystemRequestedShutdown = class extends CustomType {
@@ -5022,8 +5025,8 @@ var Spa = class {
   dispatch(msg, immediate2) {
     this.#runtime.dispatch(msg, immediate2);
   }
-  emit(event4, data) {
-    this.#runtime.emit(event4, data);
+  emit(event4, data2) {
+    this.#runtime.emit(event4, data2);
   }
 };
 var start = ({ init: init2, update: update3, view: view2 }, selector, flags) => {
@@ -6449,7 +6452,7 @@ function init(_) {
       "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
     ),
     new Pokemon(
-      "Squirtle",
+      "Squirrel",
       "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
     ),
     new Pokemon(
@@ -6462,7 +6465,7 @@ function init(_) {
 }
 function view_new_pokemon(new_pokemon) {
   return div(
-    toList([class$("py-2 join w-full")]),
+    toList([class$("join py-2  w-full")]),
     toList([
       input(
         toList([
@@ -6486,7 +6489,10 @@ function view_new_pokemon(new_pokemon) {
 }
 function view_pokemon_card(pokemon) {
   return div(
-    toList([]),
+    toList([
+      class$("tooltip tooltip-bottom"),
+      data("tip", pokemon.name)
+    ]),
     toList([
       img(
         toList([

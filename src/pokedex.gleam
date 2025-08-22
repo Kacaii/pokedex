@@ -73,7 +73,7 @@ pub fn init(_args) -> #(Model, Effect(Msg)) {
       sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png",
     ),
     Pokemon(
-      name: "Squirtle",
+      name: "Squirrel",
       sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png",
     ),
     Pokemon(
@@ -96,7 +96,7 @@ fn view(model: Model) -> Element(Msg) {
 }
 
 fn view_new_pokemon(new_pokemon: String) -> Element(Msg) {
-  html.div([attr.class("py-2 join w-full")], [
+  html.div([attr.class("join py-2  w-full")], [
     html.input([
       attr.class("input join-item"),
       attr.placeholder("Enter a Pokemon name:"),
@@ -126,14 +126,17 @@ fn view_pokemon_list(pokemon_list: List(Pokemon)) -> Element(Msg) {
 }
 
 fn view_pokemon_card(pokemon: Pokemon) -> Element(Msg) {
-  html.div([], [
-    html.img([
-      attr.class(
-        "w-full hover:drop-shadow-md hover:scale-105 "
-        <> "transform transition-transform duration-200",
-      ),
-      attr.src(pokemon.sprite_url),
-      attr.alt(pokemon.name),
-    ]),
-  ])
+  html.div(
+    [attr.class("tooltip tooltip-bottom"), attr.data("tip", pokemon.name)],
+    [
+      html.img([
+        attr.class(
+          "w-full hover:drop-shadow-md hover:scale-105 "
+          <> "transform transition-transform duration-200",
+        ),
+        attr.src(pokemon.sprite_url),
+        attr.alt(pokemon.name),
+      ]),
+    ],
+  )
 }
