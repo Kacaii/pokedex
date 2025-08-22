@@ -1,5 +1,5 @@
-import gleam/io
 import gleam/list
+import rsvp
 
 import lustre
 import lustre/attribute as attr
@@ -28,6 +28,7 @@ pub type Model {
 pub type Msg {
   UserTypedPokemon(String)
   UserAddedPokemon
+  ApiReturnedPokemons(Result(Pokemon, rsvp.Error))
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
@@ -36,11 +37,24 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       Model(..model, current_pokemon: text),
       effect.none(),
     )
-    UserAddedPokemon -> {
-      io.println("Tried to add a pokemon:" <> model.current_pokemon)
-      #(model, effect.none())
-    }
+
+    UserAddedPokemon -> #(model, get_pokemon(model.current_pokemon))
+
+    ApiReturnedPokemons(Ok(pokemon)) -> #(
+      Model(..model, pokemon_list: [pokemon, ..model.pokemon_list]),
+      effect.none(),
+    )
+
+    ApiReturnedPokemons(Error(_)) -> #(model, effect.none())
   }
+}
+
+fn get_pokemon(pokemon: String) -> Effect(Msg) {
+  let decoder = pokemon.pokemon_decoder()
+  let url = "https://pokeapi.co/api/v2/pokemon/" <> pokemon
+
+  let handler = rsvp.expect_json(decoder, ApiReturnedPokemons)
+  rsvp.get(url, handler)
 }
 
 pub fn init(_args) -> #(Model, Effect(Msg)) {
@@ -94,8 +108,7 @@ fn view_pokemon_list(pokemon_list: List(Pokemon)) -> Element(Msg) {
     [
       attr.class(
         "grid grid-cols-6 grid-rows-5 gap-2 "
-        <> "border-2 border-emerald-500 rounded-md "
-        <> "p-2",
+        <> "border-2 border-emerald-500 rounded-md p-2",
       ),
     ],
     list.map(pokemon_list, view_pokemon_card),
