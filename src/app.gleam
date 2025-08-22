@@ -26,10 +26,6 @@ pub fn main() -> Nil {
       name: "Squirrel",
       sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png",
     ),
-    Pokemon(
-      name: "Pikachu",
-      sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
-    ),
   ]
 
   let app = lustre.application(init:, update:, view:)
@@ -119,15 +115,18 @@ fn view_pokemon_list(pokemon_list: List(Pokemon)) -> Element(Msg) {
 fn view_new_pokemon(new_pokemon: String) -> Element(Msg) {
   html.div(
     [
-      attr.class("bg-ctp-base rounded-b-sm " <> "py-2 text-center space-x-2"),
+      attr.class("bg-ctp-base rounded-b-sm " <> "p-2 flex gap-2"),
     ],
     [
       // Input for the Pokemon
       html.input([
         attr.class(
-          "placeholder:text-ctp-overlay1 border-1 border-ctp-overlay1 rounded-sm"
-          <> " p-2 "
-          <> "text-ctp-text",
+          "placeholder:text-ctp-overlay1 "
+          <> "focus:outline-none"
+          <> "border-1 border-ctp-overlay1 rounded-sm "
+          <> "p-2 flex-1"
+          <> "text-ctp-text "
+          <> "w-full",
         ),
         attr.placeholder("Enter a Pokemon name:"),
         attr.value(new_pokemon),
@@ -138,10 +137,10 @@ fn view_new_pokemon(new_pokemon: String) -> Element(Msg) {
       html.button(
         [
           attr.class(
-            "hover:bg-ctp-overlay0 hover:text-ctp-base hover:cursor-pointer "
+            "hover:bg-ctp-green-500 hover:text-ctp-base hover:cursor-pointer "
             <> "p-2 rounded-sm "
             <> "border-1 border-ctp-overlay1 "
-            <> "text-ctp-overlay1",
+            <> "text-ctp-overlay1 ",
           ),
           event.on_click(UserAddedPokemon),
         ],
