@@ -169,6 +169,9 @@
   .my-5 {
     margin-block: calc(var(--spacing) * 5);
   }
+  .contents {
+    display: contents;
+  }
   .flex {
     display: flex;
   }

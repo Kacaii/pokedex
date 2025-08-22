@@ -122,9 +122,9 @@ fn view_new_pokemon(new_pokemon: String) -> Element(Msg) {
       html.input([
         attr.class(
           "placeholder:text-ctp-overlay1 "
-          <> "focus:outline-none"
+          <> "focus:outline-none "
           <> "border-1 border-ctp-overlay1 rounded-sm "
-          <> "p-2 flex-1"
+          <> "p-2 flex-1 "
           <> "text-ctp-text "
           <> "w-full",
         ),
