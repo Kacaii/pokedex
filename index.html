@@ -6,6 +6,18 @@
 
     <title>Pokedex</title>
 
+    <!--   Manifest for PWA Support --------------------------------------- -->
+    <link rel="manifest" href="./priv/static/manifest.json" />
+    <!--   Favicon -->
+    <link
+      rel="icon"
+      href="./priv/static/pokeball_icon_192px.png"
+      type="image/png"
+    />
+
+    <!--   Lustre Runtime ------------------------------------------------- -->
+    <script type="module" src="./priv/static/pokedex.mjs"></script>
+
     <!-- 󱏿  Tailwind -->
     <link rel="stylesheet" type="text/css" href="./priv/static/pokedex.css" />
 
@@ -14,15 +26,6 @@
       href="https://cdn.jsdelivr.net/npm/daisyui@5"
       rel="stylesheet"
       type="text/css"
-    />
-
-    <script type="module" src="./priv/static/pokedex.mjs"></script>
-
-    <link rel="manifest" href="./priv/static/manifest.json" />
-    <link
-      rel="icon"
-      href="./priv/static/pokeball_icon_192px.png"
-      type="image/png"
     />
   </head>
 
