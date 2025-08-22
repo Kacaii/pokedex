@@ -6406,7 +6406,7 @@ var ApiReturnedPokemons = class extends CustomType {
     this[0] = $0;
   }
 };
-function get_pokemon(pokemon_name) {
+function get_pokemon_from_api(pokemon_name) {
   let decoder = pokemon_decoder();
   let url = "https://pokeapi.co/api/v2/pokemon/" + pokemon_name;
   let handler = expect_json(
@@ -6422,7 +6422,7 @@ function update2(model, msg) {
     let text4 = msg[0];
     return [new Model(text4, model.pokemon_list), none()];
   } else if (msg instanceof UserAddedPokemon) {
-    return [model, get_pokemon(model.current_pokemon)];
+    return [model, get_pokemon_from_api(model.current_pokemon)];
   } else {
     let $ = msg[0];
     if ($ instanceof Ok) {
@@ -6441,26 +6441,8 @@ function update2(model, msg) {
     }
   }
 }
-function init(_) {
-  let kanto_starters = toList([
-    new Pokemon(
-      "Bulbasaur",
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
-    ),
-    new Pokemon(
-      "Charmander",
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
-    ),
-    new Pokemon(
-      "Squirrel",
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
-    ),
-    new Pokemon(
-      "Pikachu",
-      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
-    )
-  ]);
-  let model = new Model("", kanto_starters);
+function init(pokemons) {
+  let model = new Model("", pokemons);
   return [model, none()];
 }
 function view_new_pokemon(new_pokemon) {
@@ -6526,17 +6508,35 @@ function view(model) {
   );
 }
 function main() {
+  let kanto_starters = toList([
+    new Pokemon(
+      "Bulbasaur",
+      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png"
+    ),
+    new Pokemon(
+      "Charmander",
+      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png"
+    ),
+    new Pokemon(
+      "Squirrel",
+      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png"
+    ),
+    new Pokemon(
+      "Pikachu",
+      "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+    )
+  ]);
   let app = application(init, update2, view);
-  let $ = start3(app, "#app", void 0);
+  let $ = start3(app, "#app", kanto_starters);
   if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
       FILEPATH,
       "pokedex",
-      17,
+      36,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 352, end: 401, pattern_start: 363, pattern_end: 368 }
+      { value: $, start: 976, end: 1048, pattern_start: 987, pattern_end: 992 }
     );
   }
   return void 0;

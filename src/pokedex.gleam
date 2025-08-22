@@ -13,8 +13,27 @@ import lustre/event
 import rsvp
 
 pub fn main() -> Nil {
+  let kanto_starters: List(Pokemon) = [
+    Pokemon(
+      name: "Bulbasaur",
+      sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
+    ),
+    Pokemon(
+      name: "Charmander",
+      sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png",
+    ),
+    Pokemon(
+      name: "Squirrel",
+      sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png",
+    ),
+    Pokemon(
+      name: "Pikachu",
+      sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+    ),
+  ]
+
   let app = lustre.application(init:, update:, view:)
-  let assert Ok(_) = lustre.start(app, "#app", Nil)
+  let assert Ok(_) = lustre.start(app, onto: "#app", with: kanto_starters)
 
   Nil
 }
@@ -40,7 +59,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       effect.none(),
     )
 
-    UserAddedPokemon -> #(model, get_pokemon(model.current_pokemon))
+    UserAddedPokemon -> #(model, get_pokemon_from_api(model.current_pokemon))
 
     ApiReturnedPokemons(Ok(pokemon)) -> #(
       Model(..model, pokemon_list: [pokemon, ..model.pokemon_list]),
@@ -54,7 +73,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   }
 }
 
-fn get_pokemon(pokemon_name: String) -> Effect(Msg) {
+fn get_pokemon_from_api(pokemon_name: String) -> Effect(Msg) {
   let decoder = pokemon.pokemon_decoder()
   let url = "https://pokeapi.co/api/v2/pokemon/" <> pokemon_name
 
@@ -62,27 +81,8 @@ fn get_pokemon(pokemon_name: String) -> Effect(Msg) {
   rsvp.get(url, handler)
 }
 
-pub fn init(_args) -> #(Model, Effect(Msg)) {
-  let kanto_starters: List(Pokemon) = [
-    Pokemon(
-      name: "Bulbasaur",
-      sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
-    ),
-    Pokemon(
-      name: "Charmander",
-      sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png",
-    ),
-    Pokemon(
-      name: "Squirrel",
-      sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png",
-    ),
-    Pokemon(
-      name: "Pikachu",
-      sprite_url: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
-    ),
-  ]
-
-  let model = Model(current_pokemon: "", pokemon_list: kanto_starters)
+pub fn init(with pokemons: List(Pokemon)) -> #(Model, Effect(Msg)) {
+  let model = Model(current_pokemon: "", pokemon_list: pokemons)
   #(model, effect.none())
 }
 
