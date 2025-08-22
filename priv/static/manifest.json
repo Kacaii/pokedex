@@ -2,8 +2,8 @@
   "name": "Pokedex",
   "start_url": "/",
   "version": "0.6.1",
-  "manifest_version": 3,
-  "display": "browser",
+  "manifest_version": 2,
+  "display": "standalone",
   "icons": [
     {
       "src": "./pokeball_icon_192px.png",
