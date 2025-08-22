@@ -1,5 +1,7 @@
+import gleam/io
 import gleam/list
-import rsvp
+import gleam/string
+import pokemon.{type Pokemon, Pokemon}
 
 import lustre
 import lustre/attribute as attr
@@ -8,7 +10,7 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
 
-import pokemon.{type Pokemon, Pokemon}
+import rsvp
 
 pub fn main() -> Nil {
   let app = lustre.application(init:, update:, view:)
@@ -45,13 +47,16 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       effect.none(),
     )
 
-    ApiReturnedPokemons(Error(_)) -> #(model, effect.none())
+    ApiReturnedPokemons(Error(err)) -> {
+      io.println_error(string.inspect(err))
+      #(model, effect.none())
+    }
   }
 }
 
-fn get_pokemon(pokemon: String) -> Effect(Msg) {
+fn get_pokemon(pokemon_name: String) -> Effect(Msg) {
   let decoder = pokemon.pokemon_decoder()
-  let url = "https://pokeapi.co/api/v2/pokemon/" <> pokemon
+  let url = "https://pokeapi.co/api/v2/pokemon/" <> pokemon_name
 
   let handler = rsvp.expect_json(decoder, ApiReturnedPokemons)
   rsvp.get(url, handler)
@@ -84,10 +89,9 @@ pub fn init(_args) -> #(Model, Effect(Msg)) {
 // VIEW ------------------------------------------------------------------------
 
 fn view(model: Model) -> Element(Msg) {
-  html.div([attr.class("max-w-lg  mx-auto")], [
-    html.h1([attr.class("text-center font-bold")], [html.text("Pokedex WIP")]),
-    view_new_pokemon(model.current_pokemon),
+  html.div([attr.class("max-w-md  mx-auto my-5")], [
     view_pokemon_list(model.pokemon_list),
+    view_new_pokemon(model.current_pokemon),
   ])
 }
 
@@ -95,11 +99,17 @@ fn view_new_pokemon(new_pokemon: String) -> Element(Msg) {
   html.div([attr.class("text-center py-2")], [
     html.input([
       attr.class("border border-gray-500 rounded-md " <> "p-1"),
-      attr.placeholder("Enter Pokemon name"),
+      attr.placeholder("Enter Pokemon name:"),
       attr.value(new_pokemon),
       event.on_input(UserTypedPokemon),
     ]),
-    html.button([event.on_click(UserAddedPokemon)], [html.text("Add")]),
+    html.button(
+      [
+        event.on_click(UserAddedPokemon),
+        attr.class("bg-gray-400 rounded-md mx-2 p-1"),
+      ],
+      [html.text("Add")],
+    ),
   ])
 }
 
@@ -108,7 +118,7 @@ fn view_pokemon_list(pokemon_list: List(Pokemon)) -> Element(Msg) {
     [
       attr.class(
         "grid grid-cols-6 grid-rows-5 gap-2 "
-        <> "border-2 border-emerald-500 rounded-md p-2",
+        <> "border-2 border-black rounded-sm p-2",
       ),
     ],
     list.map(pokemon_list, view_pokemon_card),
@@ -118,7 +128,10 @@ fn view_pokemon_list(pokemon_list: List(Pokemon)) -> Element(Msg) {
 fn view_pokemon_card(pokemon: Pokemon) -> Element(Msg) {
   html.div([], [
     html.img([
-      attr.class("w-full bg-emerald-200 "),
+      attr.class(
+        "w-full hover:drop-shadow-md hover:scale-105 "
+        <> "transform transition-transform duration-200",
+      ),
       attr.src(pokemon.sprite_url),
       attr.alt(pokemon.name),
     ]),

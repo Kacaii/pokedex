@@ -257,6 +257,11 @@ function bitArrayByteAt(buffer, bitOffset, index5) {
     return a | b;
   }
 }
+var UtfCodepoint = class {
+  constructor(value2) {
+    this.value = value2;
+  }
+};
 var isBitArrayDeprecationMessagePrinted = {};
 function bitArrayPrintDeprecationWarning(name, message2) {
   if (isBitArrayDeprecationMessagePrinted[name]) {
@@ -1106,344 +1111,6 @@ var Eq = class extends CustomType {
 var Gt = class extends CustomType {
 };
 
-// build/dev/javascript/gleam_stdlib/gleam/string.mjs
-function concat_loop(loop$strings, loop$accumulator) {
-  while (true) {
-    let strings = loop$strings;
-    let accumulator = loop$accumulator;
-    if (strings instanceof Empty) {
-      return accumulator;
-    } else {
-      let string5 = strings.head;
-      let strings$1 = strings.tail;
-      loop$strings = strings$1;
-      loop$accumulator = accumulator + string5;
-    }
-  }
-}
-function concat2(strings) {
-  return concat_loop(strings, "");
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
-var DecodeError = class extends CustomType {
-  constructor(expected, found, path) {
-    super();
-    this.expected = expected;
-    this.found = found;
-    this.path = path;
-  }
-};
-var Decoder = class extends CustomType {
-  constructor(function$) {
-    super();
-    this.function = function$;
-  }
-};
-function run(data, decoder) {
-  let $ = decoder.function(data);
-  let maybe_invalid_data;
-  let errors;
-  maybe_invalid_data = $[0];
-  errors = $[1];
-  if (errors instanceof Empty) {
-    return new Ok(maybe_invalid_data);
-  } else {
-    return new Error(errors);
-  }
-}
-function success(data) {
-  return new Decoder((_) => {
-    return [data, toList([])];
-  });
-}
-function map2(decoder, transformer) {
-  return new Decoder(
-    (d) => {
-      let $ = decoder.function(d);
-      let data;
-      let errors;
-      data = $[0];
-      errors = $[1];
-      return [transformer(data), errors];
-    }
-  );
-}
-function run_decoders(loop$data, loop$failure, loop$decoders) {
-  while (true) {
-    let data = loop$data;
-    let failure2 = loop$failure;
-    let decoders = loop$decoders;
-    if (decoders instanceof Empty) {
-      return failure2;
-    } else {
-      let decoder = decoders.head;
-      let decoders$1 = decoders.tail;
-      let $ = decoder.function(data);
-      let layer;
-      let errors;
-      layer = $;
-      errors = $[1];
-      if (errors instanceof Empty) {
-        return layer;
-      } else {
-        loop$data = data;
-        loop$failure = failure2;
-        loop$decoders = decoders$1;
-      }
-    }
-  }
-}
-function one_of(first, alternatives) {
-  return new Decoder(
-    (dynamic_data) => {
-      let $ = first.function(dynamic_data);
-      let layer;
-      let errors;
-      layer = $;
-      errors = $[1];
-      if (errors instanceof Empty) {
-        return layer;
-      } else {
-        return run_decoders(dynamic_data, layer, alternatives);
-      }
-    }
-  );
-}
-function run_dynamic_function(data, name, f) {
-  let $ = f(data);
-  if ($ instanceof Ok) {
-    let data$1 = $[0];
-    return [data$1, toList([])];
-  } else {
-    let zero = $[0];
-    return [
-      zero,
-      toList([new DecodeError(name, classify_dynamic(data), toList([]))])
-    ];
-  }
-}
-function decode_int(data) {
-  return run_dynamic_function(data, "Int", int);
-}
-var int2 = /* @__PURE__ */ new Decoder(decode_int);
-function decode_string(data) {
-  return run_dynamic_function(data, "String", string);
-}
-var string2 = /* @__PURE__ */ new Decoder(decode_string);
-function push_path(layer, path) {
-  let decoder = one_of(
-    string2,
-    toList([
-      (() => {
-        let _pipe = int2;
-        return map2(_pipe, to_string);
-      })()
-    ])
-  );
-  let path$1 = map(
-    path,
-    (key) => {
-      let key$1 = identity(key);
-      let $ = run(key$1, decoder);
-      if ($ instanceof Ok) {
-        let key$2 = $[0];
-        return key$2;
-      } else {
-        return "<" + classify_dynamic(key$1) + ">";
-      }
-    }
-  );
-  let errors = map(
-    layer[1],
-    (error) => {
-      return new DecodeError(
-        error.expected,
-        error.found,
-        append2(path$1, error.path)
-      );
-    }
-  );
-  return [layer[0], errors];
-}
-function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_miss) {
-  while (true) {
-    let path = loop$path;
-    let position = loop$position;
-    let inner = loop$inner;
-    let data = loop$data;
-    let handle_miss = loop$handle_miss;
-    if (path instanceof Empty) {
-      let _pipe = inner(data);
-      return push_path(_pipe, reverse(position));
-    } else {
-      let key = path.head;
-      let path$1 = path.tail;
-      let $ = index2(data, key);
-      if ($ instanceof Ok) {
-        let $1 = $[0];
-        if ($1 instanceof Some) {
-          let data$1 = $1[0];
-          loop$path = path$1;
-          loop$position = prepend(key, position);
-          loop$inner = inner;
-          loop$data = data$1;
-          loop$handle_miss = handle_miss;
-        } else {
-          return handle_miss(data, prepend(key, position));
-        }
-      } else {
-        let kind = $[0];
-        let $1 = inner(data);
-        let default$;
-        default$ = $1[0];
-        let _pipe = [
-          default$,
-          toList([new DecodeError(kind, classify_dynamic(data), toList([]))])
-        ];
-        return push_path(_pipe, reverse(position));
-      }
-    }
-  }
-}
-function subfield(field_path, field_decoder, next) {
-  return new Decoder(
-    (data) => {
-      let $ = index3(
-        field_path,
-        toList([]),
-        field_decoder.function,
-        data,
-        (data2, position) => {
-          let $12 = field_decoder.function(data2);
-          let default$;
-          default$ = $12[0];
-          let _pipe = [
-            default$,
-            toList([new DecodeError("Field", "Nothing", toList([]))])
-          ];
-          return push_path(_pipe, reverse(position));
-        }
-      );
-      let out;
-      let errors1;
-      out = $[0];
-      errors1 = $[1];
-      let $1 = next(out).function(data);
-      let out$1;
-      let errors2;
-      out$1 = $1[0];
-      errors2 = $1[1];
-      return [out$1, append2(errors1, errors2)];
-    }
-  );
-}
-function field(field_name, field_decoder, next) {
-  return subfield(toList([field_name]), field_decoder, next);
-}
-
-// build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
-function identity(x) {
-  return x;
-}
-function to_string(term) {
-  return term.toString();
-}
-function pop_codeunit(str) {
-  return [str.charCodeAt(0) | 0, str.slice(1)];
-}
-function lowercase(string5) {
-  return string5.toLowerCase();
-}
-function string_codeunit_slice(str, from2, length4) {
-  return str.slice(from2, from2 + length4);
-}
-function starts_with(haystack, needle) {
-  return haystack.startsWith(needle);
-}
-var unicode_whitespaces = [
-  " ",
-  // Space
-  "	",
-  // Horizontal tab
-  "\n",
-  // Line feed
-  "\v",
-  // Vertical tab
-  "\f",
-  // Form feed
-  "\r",
-  // Carriage return
-  "\x85",
-  // Next line
-  "\u2028",
-  // Line separator
-  "\u2029"
-  // Paragraph separator
-].join("");
-var trim_start_regex = /* @__PURE__ */ new RegExp(
-  `^[${unicode_whitespaces}]*`
-);
-var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
-function classify_dynamic(data) {
-  if (typeof data === "string") {
-    return "String";
-  } else if (typeof data === "boolean") {
-    return "Bool";
-  } else if (data instanceof Result) {
-    return "Result";
-  } else if (data instanceof List) {
-    return "List";
-  } else if (data instanceof BitArray) {
-    return "BitArray";
-  } else if (data instanceof Dict) {
-    return "Dict";
-  } else if (Number.isInteger(data)) {
-    return "Int";
-  } else if (Array.isArray(data)) {
-    return `Array`;
-  } else if (typeof data === "number") {
-    return "Float";
-  } else if (data === null) {
-    return "Nil";
-  } else if (data === void 0) {
-    return "Nil";
-  } else {
-    const type = typeof data;
-    return type.charAt(0).toUpperCase() + type.slice(1);
-  }
-}
-function index2(data, key) {
-  if (data instanceof Dict || data instanceof WeakMap || data instanceof Map) {
-    const token = {};
-    const entry = data.get(key, token);
-    if (entry === token) return new Ok(new None());
-    return new Ok(new Some(entry));
-  }
-  const key_is_int = Number.isInteger(key);
-  if (key_is_int && key >= 0 && key < 8 && data instanceof List) {
-    let i = 0;
-    for (const value2 of data) {
-      if (i === key) return new Ok(new Some(value2));
-      i++;
-    }
-    return new Error("Indexable");
-  }
-  if (key_is_int && Array.isArray(data) || data && typeof data === "object" || data && Object.getPrototypeOf(data) === Object.prototype) {
-    if (key in data) return new Ok(new Some(data[key]));
-    return new Ok(new None());
-  }
-  return new Error(key_is_int ? "Indexable" : "Dict");
-}
-function int(data) {
-  if (Number.isInteger(data)) return new Ok(data);
-  return new Error(0);
-}
-function string(data) {
-  if (typeof data === "string") return new Ok(data);
-  return new Error("");
-}
-
 // build/dev/javascript/gleam_stdlib/gleam/list.mjs
 var Ascending = class extends CustomType {
 };
@@ -1499,10 +1166,10 @@ function append_loop(loop$first, loop$second) {
     }
   }
 }
-function append2(first, second2) {
+function append(first, second2) {
   return append_loop(reverse(first), second2);
 }
-function fold2(loop$list, loop$initial, loop$fun) {
+function fold(loop$list, loop$initial, loop$fun) {
   while (true) {
     let list4 = loop$list;
     let initial = loop$initial;
@@ -1886,6 +1553,521 @@ function key_find(keyword_list, desired_key) {
       }
     }
   );
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function concat_loop(loop$strings, loop$accumulator) {
+  while (true) {
+    let strings = loop$strings;
+    let accumulator = loop$accumulator;
+    if (strings instanceof Empty) {
+      return accumulator;
+    } else {
+      let string5 = strings.head;
+      let strings$1 = strings.tail;
+      loop$strings = strings$1;
+      loop$accumulator = accumulator + string5;
+    }
+  }
+}
+function concat2(strings) {
+  return concat_loop(strings, "");
+}
+function inspect2(term) {
+  let _pipe = inspect(term);
+  return identity(_pipe);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
+var DecodeError = class extends CustomType {
+  constructor(expected, found, path) {
+    super();
+    this.expected = expected;
+    this.found = found;
+    this.path = path;
+  }
+};
+var Decoder = class extends CustomType {
+  constructor(function$) {
+    super();
+    this.function = function$;
+  }
+};
+function run(data, decoder) {
+  let $ = decoder.function(data);
+  let maybe_invalid_data;
+  let errors;
+  maybe_invalid_data = $[0];
+  errors = $[1];
+  if (errors instanceof Empty) {
+    return new Ok(maybe_invalid_data);
+  } else {
+    return new Error(errors);
+  }
+}
+function success(data) {
+  return new Decoder((_) => {
+    return [data, toList([])];
+  });
+}
+function map2(decoder, transformer) {
+  return new Decoder(
+    (d) => {
+      let $ = decoder.function(d);
+      let data;
+      let errors;
+      data = $[0];
+      errors = $[1];
+      return [transformer(data), errors];
+    }
+  );
+}
+function run_decoders(loop$data, loop$failure, loop$decoders) {
+  while (true) {
+    let data = loop$data;
+    let failure2 = loop$failure;
+    let decoders = loop$decoders;
+    if (decoders instanceof Empty) {
+      return failure2;
+    } else {
+      let decoder = decoders.head;
+      let decoders$1 = decoders.tail;
+      let $ = decoder.function(data);
+      let layer;
+      let errors;
+      layer = $;
+      errors = $[1];
+      if (errors instanceof Empty) {
+        return layer;
+      } else {
+        loop$data = data;
+        loop$failure = failure2;
+        loop$decoders = decoders$1;
+      }
+    }
+  }
+}
+function one_of(first, alternatives) {
+  return new Decoder(
+    (dynamic_data) => {
+      let $ = first.function(dynamic_data);
+      let layer;
+      let errors;
+      layer = $;
+      errors = $[1];
+      if (errors instanceof Empty) {
+        return layer;
+      } else {
+        return run_decoders(dynamic_data, layer, alternatives);
+      }
+    }
+  );
+}
+function run_dynamic_function(data, name, f) {
+  let $ = f(data);
+  if ($ instanceof Ok) {
+    let data$1 = $[0];
+    return [data$1, toList([])];
+  } else {
+    let zero = $[0];
+    return [
+      zero,
+      toList([new DecodeError(name, classify_dynamic(data), toList([]))])
+    ];
+  }
+}
+function decode_int(data) {
+  return run_dynamic_function(data, "Int", int);
+}
+var int2 = /* @__PURE__ */ new Decoder(decode_int);
+function decode_string(data) {
+  return run_dynamic_function(data, "String", string);
+}
+var string2 = /* @__PURE__ */ new Decoder(decode_string);
+function push_path(layer, path) {
+  let decoder = one_of(
+    string2,
+    toList([
+      (() => {
+        let _pipe = int2;
+        return map2(_pipe, to_string);
+      })()
+    ])
+  );
+  let path$1 = map(
+    path,
+    (key) => {
+      let key$1 = identity(key);
+      let $ = run(key$1, decoder);
+      if ($ instanceof Ok) {
+        let key$2 = $[0];
+        return key$2;
+      } else {
+        return "<" + classify_dynamic(key$1) + ">";
+      }
+    }
+  );
+  let errors = map(
+    layer[1],
+    (error) => {
+      return new DecodeError(
+        error.expected,
+        error.found,
+        append(path$1, error.path)
+      );
+    }
+  );
+  return [layer[0], errors];
+}
+function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_miss) {
+  while (true) {
+    let path = loop$path;
+    let position = loop$position;
+    let inner = loop$inner;
+    let data = loop$data;
+    let handle_miss = loop$handle_miss;
+    if (path instanceof Empty) {
+      let _pipe = inner(data);
+      return push_path(_pipe, reverse(position));
+    } else {
+      let key = path.head;
+      let path$1 = path.tail;
+      let $ = index2(data, key);
+      if ($ instanceof Ok) {
+        let $1 = $[0];
+        if ($1 instanceof Some) {
+          let data$1 = $1[0];
+          loop$path = path$1;
+          loop$position = prepend(key, position);
+          loop$inner = inner;
+          loop$data = data$1;
+          loop$handle_miss = handle_miss;
+        } else {
+          return handle_miss(data, prepend(key, position));
+        }
+      } else {
+        let kind = $[0];
+        let $1 = inner(data);
+        let default$;
+        default$ = $1[0];
+        let _pipe = [
+          default$,
+          toList([new DecodeError(kind, classify_dynamic(data), toList([]))])
+        ];
+        return push_path(_pipe, reverse(position));
+      }
+    }
+  }
+}
+function subfield(field_path, field_decoder, next) {
+  return new Decoder(
+    (data) => {
+      let $ = index3(
+        field_path,
+        toList([]),
+        field_decoder.function,
+        data,
+        (data2, position) => {
+          let $12 = field_decoder.function(data2);
+          let default$;
+          default$ = $12[0];
+          let _pipe = [
+            default$,
+            toList([new DecodeError("Field", "Nothing", toList([]))])
+          ];
+          return push_path(_pipe, reverse(position));
+        }
+      );
+      let out;
+      let errors1;
+      out = $[0];
+      errors1 = $[1];
+      let $1 = next(out).function(data);
+      let out$1;
+      let errors2;
+      out$1 = $1[0];
+      errors2 = $1[1];
+      return [out$1, append(errors1, errors2)];
+    }
+  );
+}
+function field(field_name, field_decoder, next) {
+  return subfield(toList([field_name]), field_decoder, next);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
+function identity(x) {
+  return x;
+}
+function to_string(term) {
+  return term.toString();
+}
+function pop_codeunit(str) {
+  return [str.charCodeAt(0) | 0, str.slice(1)];
+}
+function lowercase(string5) {
+  return string5.toLowerCase();
+}
+function string_codeunit_slice(str, from2, length4) {
+  return str.slice(from2, from2 + length4);
+}
+function starts_with(haystack, needle) {
+  return haystack.startsWith(needle);
+}
+var unicode_whitespaces = [
+  " ",
+  // Space
+  "	",
+  // Horizontal tab
+  "\n",
+  // Line feed
+  "\v",
+  // Vertical tab
+  "\f",
+  // Form feed
+  "\r",
+  // Carriage return
+  "\x85",
+  // Next line
+  "\u2028",
+  // Line separator
+  "\u2029"
+  // Paragraph separator
+].join("");
+var trim_start_regex = /* @__PURE__ */ new RegExp(
+  `^[${unicode_whitespaces}]*`
+);
+var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
+function console_error(term) {
+  console.error(term);
+}
+function classify_dynamic(data) {
+  if (typeof data === "string") {
+    return "String";
+  } else if (typeof data === "boolean") {
+    return "Bool";
+  } else if (data instanceof Result) {
+    return "Result";
+  } else if (data instanceof List) {
+    return "List";
+  } else if (data instanceof BitArray) {
+    return "BitArray";
+  } else if (data instanceof Dict) {
+    return "Dict";
+  } else if (Number.isInteger(data)) {
+    return "Int";
+  } else if (Array.isArray(data)) {
+    return `Array`;
+  } else if (typeof data === "number") {
+    return "Float";
+  } else if (data === null) {
+    return "Nil";
+  } else if (data === void 0) {
+    return "Nil";
+  } else {
+    const type = typeof data;
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  }
+}
+function inspect(v) {
+  return new Inspector().inspect(v);
+}
+function float_to_string(float2) {
+  const string5 = float2.toString().replace("+", "");
+  if (string5.indexOf(".") >= 0) {
+    return string5;
+  } else {
+    const index5 = string5.indexOf("e");
+    if (index5 >= 0) {
+      return string5.slice(0, index5) + ".0" + string5.slice(index5);
+    } else {
+      return string5 + ".0";
+    }
+  }
+}
+var Inspector = class {
+  #references = /* @__PURE__ */ new Set();
+  inspect(v) {
+    const t = typeof v;
+    if (v === true) return "True";
+    if (v === false) return "False";
+    if (v === null) return "//js(null)";
+    if (v === void 0) return "Nil";
+    if (t === "string") return this.#string(v);
+    if (t === "bigint" || Number.isInteger(v)) return v.toString();
+    if (t === "number") return float_to_string(v);
+    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
+    if (v instanceof BitArray) return this.#bit_array(v);
+    if (v instanceof RegExp) return `//js(${v})`;
+    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
+    if (v instanceof Function) {
+      const args = [];
+      for (const i of Array(v.length).keys())
+        args.push(String.fromCharCode(i + 97));
+      return `//fn(${args.join(", ")}) { ... }`;
+    }
+    if (this.#references.size === this.#references.add(v).size) {
+      return "//js(circular reference)";
+    }
+    let printed;
+    if (Array.isArray(v)) {
+      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
+    } else if (v instanceof List) {
+      printed = this.#list(v);
+    } else if (v instanceof CustomType) {
+      printed = this.#customType(v);
+    } else if (v instanceof Dict) {
+      printed = this.#dict(v);
+    } else if (v instanceof Set) {
+      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
+    } else {
+      printed = this.#object(v);
+    }
+    this.#references.delete(v);
+    return printed;
+  }
+  #object(v) {
+    const name = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+    const props = [];
+    for (const k of Object.keys(v)) {
+      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
+    }
+    const body = props.length ? " " + props.join(", ") + " " : "";
+    const head = name === "Object" ? "" : name + " ";
+    return `//js(${head}{${body}})`;
+  }
+  #dict(map6) {
+    let body = "dict.from_list([";
+    let first = true;
+    map6.forEach((value2, key) => {
+      if (!first) body = body + ", ";
+      body = body + "#(" + this.inspect(key) + ", " + this.inspect(value2) + ")";
+      first = false;
+    });
+    return body + "])";
+  }
+  #customType(record) {
+    const props = Object.keys(record).map((label) => {
+      const value2 = this.inspect(record[label]);
+      return isNaN(parseInt(label)) ? `${label}: ${value2}` : value2;
+    }).join(", ");
+    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
+  }
+  #list(list4) {
+    if (list4 instanceof Empty) {
+      return "[]";
+    }
+    let char_out = 'charlist.from_string("';
+    let list_out = "[";
+    let current = list4;
+    while (current instanceof NonEmpty) {
+      let element4 = current.head;
+      current = current.tail;
+      if (list_out !== "[") {
+        list_out += ", ";
+      }
+      list_out += this.inspect(element4);
+      if (char_out) {
+        if (Number.isInteger(element4) && element4 >= 32 && element4 <= 126) {
+          char_out += String.fromCharCode(element4);
+        } else {
+          char_out = null;
+        }
+      }
+    }
+    if (char_out) {
+      return char_out + '")';
+    } else {
+      return list_out + "]";
+    }
+  }
+  #string(str) {
+    let new_str = '"';
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      switch (char) {
+        case "\n":
+          new_str += "\\n";
+          break;
+        case "\r":
+          new_str += "\\r";
+          break;
+        case "	":
+          new_str += "\\t";
+          break;
+        case "\f":
+          new_str += "\\f";
+          break;
+        case "\\":
+          new_str += "\\\\";
+          break;
+        case '"':
+          new_str += '\\"';
+          break;
+        default:
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          } else {
+            new_str += char;
+          }
+      }
+    }
+    new_str += '"';
+    return new_str;
+  }
+  #utfCodepoint(codepoint2) {
+    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
+  }
+  #bit_array(bits) {
+    if (bits.bitSize === 0) {
+      return "<<>>";
+    }
+    let acc = "<<";
+    for (let i = 0; i < bits.byteSize - 1; i++) {
+      acc += bits.byteAt(i).toString();
+      acc += ", ";
+    }
+    if (bits.byteSize * 8 === bits.bitSize) {
+      acc += bits.byteAt(bits.byteSize - 1).toString();
+    } else {
+      const trailingBitsCount = bits.bitSize % 8;
+      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
+      acc += `:size(${trailingBitsCount})`;
+    }
+    acc += ">>";
+    return acc;
+  }
+};
+function index2(data, key) {
+  if (data instanceof Dict || data instanceof WeakMap || data instanceof Map) {
+    const token = {};
+    const entry = data.get(key, token);
+    if (entry === token) return new Ok(new None());
+    return new Ok(new Some(entry));
+  }
+  const key_is_int = Number.isInteger(key);
+  if (key_is_int && key >= 0 && key < 8 && data instanceof List) {
+    let i = 0;
+    for (const value2 of data) {
+      if (i === key) return new Ok(new Some(value2));
+      i++;
+    }
+    return new Error("Indexable");
+  }
+  if (key_is_int && Array.isArray(data) || data && typeof data === "object" || data && Object.getPrototypeOf(data) === Object.prototype) {
+    if (key in data) return new Ok(new Some(data[key]));
+    return new Ok(new None());
+  }
+  return new Error(key_is_int ? "Indexable" : "Dict");
+}
+function int(data) {
+  if (Number.isInteger(data)) return new Ok(data);
+  return new Error(0);
+}
+function string(data) {
+  if (typeof data === "string") return new Ok(data);
+  return new Error("");
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/result.mjs
@@ -2667,7 +2849,7 @@ function remove_event(events, path, name) {
   );
 }
 function remove_attributes(handlers, path, attributes) {
-  return fold2(
+  return fold(
     attributes,
     handlers,
     (events, attribute3) => {
@@ -2726,7 +2908,7 @@ function add_event(events, mapper, path, name, handler) {
   );
 }
 function add_attributes(handlers, mapper, path, attributes) {
-  return fold2(
+  return fold(
     attributes,
     handlers,
     (events, attribute3) => {
@@ -2893,9 +3075,6 @@ function none2() {
 // build/dev/javascript/lustre/lustre/element/html.mjs
 function text3(content) {
   return text2(content);
-}
-function h1(attrs, children) {
-  return element2("h1", attrs, children);
 }
 function div(attrs, children) {
   return element2("div", attrs, children);
@@ -4761,7 +4940,7 @@ function listAppend(a, b) {
   } else if (b instanceof Empty) {
     return a;
   } else {
-    return append2(a, b);
+    return append(a, b);
   }
 }
 
@@ -4811,7 +4990,7 @@ function new$6(options) {
     option_none,
     option_none
   );
-  return fold2(
+  return fold(
     options,
     init2,
     (config, option) => {
@@ -6224,9 +6403,9 @@ var ApiReturnedPokemons = class extends CustomType {
     this[0] = $0;
   }
 };
-function get_pokemon(pokemon) {
+function get_pokemon(pokemon_name) {
   let decoder = pokemon_decoder();
-  let url = "https://pokeapi.co/api/v2/pokemon/" + pokemon;
+  let url = "https://pokeapi.co/api/v2/pokemon/" + pokemon_name;
   let handler = expect_json(
     decoder,
     (var0) => {
@@ -6253,6 +6432,8 @@ function update2(model, msg) {
         none()
       ];
     } else {
+      let err = $[0];
+      console_error(inspect2(err));
       return [model, none()];
     }
   }
@@ -6286,7 +6467,7 @@ function view_new_pokemon(new_pokemon) {
       input(
         toList([
           class$("border border-gray-500 rounded-md p-1"),
-          placeholder("Enter Pokemon name"),
+          placeholder("Enter Pokemon name:"),
           value(new_pokemon),
           on_input((var0) => {
             return new UserTypedPokemon(var0);
@@ -6294,7 +6475,10 @@ function view_new_pokemon(new_pokemon) {
         ])
       ),
       button(
-        toList([on_click(new UserAddedPokemon())]),
+        toList([
+          on_click(new UserAddedPokemon()),
+          class$("bg-gray-400 rounded-md mx-2 p-1")
+        ]),
         toList([text3("Add")])
       )
     ])
@@ -6306,7 +6490,9 @@ function view_pokemon_card(pokemon) {
     toList([
       img(
         toList([
-          class$("w-full bg-emerald-200 "),
+          class$(
+            "w-full hover:drop-shadow-md hover:scale-105 transform transition-transform duration-200"
+          ),
           src(pokemon.sprite_url),
           alt(pokemon.name)
         ])
@@ -6318,7 +6504,7 @@ function view_pokemon_list(pokemon_list) {
   return div(
     toList([
       class$(
-        "grid grid-cols-6 grid-rows-5 gap-2 border-2 border-emerald-500 rounded-md p-2"
+        "grid grid-cols-6 grid-rows-5 gap-2 border-2 border-black rounded-sm p-2"
       )
     ]),
     map(pokemon_list, view_pokemon_card)
@@ -6326,14 +6512,10 @@ function view_pokemon_list(pokemon_list) {
 }
 function view(model) {
   return div(
-    toList([class$("max-w-lg  mx-auto")]),
+    toList([class$("max-w-md  mx-auto my-5")]),
     toList([
-      h1(
-        toList([class$("text-center font-bold")]),
-        toList([text3("Pokedex WIP")])
-      ),
-      view_new_pokemon(model.current_pokemon),
-      view_pokemon_list(model.pokemon_list)
+      view_pokemon_list(model.pokemon_list),
+      view_new_pokemon(model.current_pokemon)
     ])
   );
 }
@@ -6345,10 +6527,10 @@ function main() {
       "let_assert",
       FILEPATH,
       "pokedex",
-      15,
+      17,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 316, end: 365, pattern_start: 327, pattern_end: 332 }
+      { value: $, start: 352, end: 401, pattern_start: 363, pattern_end: 368 }
     );
   }
   return void 0;
