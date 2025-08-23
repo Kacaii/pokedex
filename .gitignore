@@ -2,6 +2,3 @@
 *.ez
 /build
 erl_crash.dump
-
-priv/static/app.css
-priv/static/app.mjs
