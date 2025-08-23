@@ -29,6 +29,10 @@ jobs:
         run: gleam deps download
       - name: Build app
         run: gleam run -m lustre/dev build app --minify
+      - name: Verify build output
+        run: |
+          ls -la priv/static/  # Check if app.min.mjs exists
+          [ -f priv/static/app.min.mjs ] || exit 1
       - name: Copy output to dist
         run: |
           mkdir -p dist
