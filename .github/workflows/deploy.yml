@@ -28,20 +28,16 @@ jobs:
       - name: Install dependencies
         run: gleam deps download
       - name: Build app
-        run: gleam run -m lustre/dev build app --minify
-      - name: Verify build output
-        run: |
-          ls -la priv/static/  # Check if app.min.mjs exists
-          [ -f priv/static/app.min.mjs ] || exit 1
+        run: gleam run -m lustre/dev build app
       - name: Copy output to dist
         run: |
           mkdir -p dist
           cp index.html dist/index.html
           cp -r priv dist/priv
-      - name: Update path in index.html to use minified app
-        run: |
-          sed -i 's|priv/static/app.mjs|priv/static/app.min.mjs|' dist/index.html
-          sed -i 's|priv/static/app.css|priv/static/app.min.css|' dist/index.html
+      # - name: Update path in index.html to use minified app
+      #   run: |
+      #     sed -i 's|priv/static/app.mjs|priv/static/app.min.mjs|' dist/index.html
+      #     sed -i 's|priv/static/app.css|priv/static/app.min.css|' dist/index.html
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
