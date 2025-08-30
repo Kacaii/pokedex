@@ -88,7 +88,7 @@ fn view(model: Model) -> Element(Msg) {
   html.div(
     [
       attr.class(
-        "border-1 border-ctp-overlay1 rounded-sm max-w-md  mx-auto my-5",
+        "border-1 border-ctp-overlay1 rounded-sm max-w-xl  mx-auto my-5",
       ),
     ],
     [
@@ -104,7 +104,9 @@ fn view_pokemon_list(pokemon_list: List(Pokemon)) -> Element(Msg) {
     [
       attr.class(
         "bg-ctp-base "
-        <> "grid grid-cols-6 grid-rows-5 gap-2 "
+        <> "grid grid-cols-3 grid-rows-4 gap-2 "
+        <> "sm:grid-cols-5 sm:grid-rows-5 "
+        <> "md:grid-cols-6 md:grid-rows-8 "
         <> "rounded-t-sm p-2",
       ),
     ],
